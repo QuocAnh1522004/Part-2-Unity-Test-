@@ -75,59 +75,63 @@ public class BoardController : MonoBehaviour
         if (m_gameOver) return;
         if (IsBusy) return;
 
-        if (!m_hintIsShown)
-        {
-            m_timeAfterFill += Time.deltaTime;
-            if (m_timeAfterFill > m_gameSettings.TimeForHint)
-            {
-                m_timeAfterFill = 0f;
-                ShowHint();
-            }
-        }
+        //if (!m_hintIsShown)
+        //{
+        //    m_timeAfterFill += Time.deltaTime;
+        //    if (m_timeAfterFill > m_gameSettings.TimeForHint)
+        //    {
+        //        m_timeAfterFill = 0f;
+        //        ShowHint();
+        //    }
+        //}
 
+        //if (Input.GetMouseButtonDown(0))
+        //{
+        //    var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+        //    if (hit.collider != null)
+        //    {
+        //        m_isDragging = true;
+        //        m_hitCollider = hit.collider;
+        //    }
+        //}
+
+        //if (Input.GetMouseButtonUp(0))
+        //{
+        //    ResetRayCast();
+        //}
+
+        //if (Input.GetMouseButton(0) && m_isDragging)
+        //{
+        //    var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+        //    if (hit.collider != null)
+        //    {
+        //        if (m_hitCollider != null && m_hitCollider != hit.collider)
+        //        {
+        //            StopHints();
+
+        //            Cell c1 = m_hitCollider.GetComponent<Cell>();
+        //            Cell c2 = hit.collider.GetComponent<Cell>();
+        //            if (AreItemsNeighbor(c1, c2))
+        //            {
+        //                IsBusy = true;
+        //                SetSortingLayer(c1, c2);
+        //                m_board.Swap(c1, c2, () =>
+        //                {
+        //                    FindMatchesAndCollapse(c1, c2);
+        //                });
+
+        //                ResetRayCast();
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        ResetRayCast();
+        //    }
+        //}
         if (Input.GetMouseButtonDown(0))
         {
-            var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
-            if (hit.collider != null)
-            {
-                m_isDragging = true;
-                m_hitCollider = hit.collider;
-            }
-        }
 
-        if (Input.GetMouseButtonUp(0))
-        {
-            ResetRayCast();
-        }
-
-        if (Input.GetMouseButton(0) && m_isDragging)
-        {
-            var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
-            if (hit.collider != null)
-            {
-                if (m_hitCollider != null && m_hitCollider != hit.collider)
-                {
-                    StopHints();
-
-                    Cell c1 = m_hitCollider.GetComponent<Cell>();
-                    Cell c2 = hit.collider.GetComponent<Cell>();
-                    if (AreItemsNeighbor(c1, c2))
-                    {
-                        IsBusy = true;
-                        SetSortingLayer(c1, c2);
-                        m_board.Swap(c1, c2, () =>
-                        {
-                            FindMatchesAndCollapse(c1, c2);
-                        });
-
-                        ResetRayCast();
-                    }
-                }
-            }
-            else
-            {
-                ResetRayCast();
-            }
         }
     }
 
@@ -242,7 +246,7 @@ public class BoardController : MonoBehaviour
 
         yield return new WaitForSeconds(0.2f);
 
-        FindMatchesAndCollapse();
+        //FindMatchesAndCollapse();
     }
 
     private IEnumerator RefillBoardCoroutine()
@@ -255,7 +259,7 @@ public class BoardController : MonoBehaviour
 
         yield return new WaitForSeconds(0.2f);
 
-        FindMatchesAndCollapse();
+        //FindMatchesAndCollapse();
     }
 
     private IEnumerator ShuffleBoardCoroutine()
@@ -264,7 +268,7 @@ public class BoardController : MonoBehaviour
 
         yield return new WaitForSeconds(0.3f);
 
-        FindMatchesAndCollapse();
+        //FindMatchesAndCollapse();
     }
 
 
