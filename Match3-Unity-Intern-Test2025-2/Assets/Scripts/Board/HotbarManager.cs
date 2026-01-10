@@ -12,7 +12,8 @@ public class HotbarManager : MonoBehaviour
     private List<Item> storedItems = new List<Item>();
     private BoardController m_boardController;
     public bool HasSpace => storedItems.Count < slots.Length;
-    private bool isGameOver;
+    [SerializeField] private GameObject winPopup;
+    [SerializeField] private GameObject losePopup;
     public void AddItem(Item item)
     {
         if (!HasSpace) return;
@@ -48,17 +49,34 @@ public class HotbarManager : MonoBehaviour
         }
         if (m_boardController.m_board.IsBoardClear())
         {
-            m_boardController.TriggerWin();
+            TriggerWin();
         }
     }
 
+    public void TriggerWin()
+    {
+        winPopup.SetActive(true);
+        Clear();
+    }
     private void TriggerLose()
     {
-        if (isGameOver) return;
-        isGameOver = true;
+        losePopup.SetActive(true);
+        Clear() ;
 
-        Debug.Log("LOSE: Hotbar full and no valid matches");
+    }
 
+    public void Clear()
+    {
+        foreach (var slot in slots)
+        {
+            for (int i = slot.childCount - 1; i >= 0; i--)
+            {
+                Destroy(slot.GetChild(i).gameObject);
+            }
+        }
+
+        // 2. Clear logical state
+        storedItems.Clear();
     }
 
     private int GetInsertIndex(Item newItem)

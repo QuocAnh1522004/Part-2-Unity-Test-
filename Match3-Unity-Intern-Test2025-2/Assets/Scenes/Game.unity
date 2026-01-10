@@ -797,6 +797,8 @@ MonoBehaviour:
   - {fileID: 373884378}
   - {fileID: 938706534}
   - {fileID: 569722818}
+  winPopup: {fileID: 78672121}
+  losePopup: {fileID: 1617975175}
 --- !u!1 &627799492
 GameObject:
   m_ObjectHideFlags: 0

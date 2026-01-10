@@ -32,7 +32,9 @@ public class BoardController : MonoBehaviour
 
     private bool m_gameOver;
 
+    [SerializeField] private float clickCooldown = 0.5f;
 
+    private float lastClickTime = -999f;
     private void Awake()
     {
         GameObject canvas = GameObject.Find("Canvas");
@@ -142,6 +144,11 @@ public class BoardController : MonoBehaviour
         //}
         if (Input.GetMouseButtonDown(0))
         {
+            if (Time.time < lastClickTime + clickCooldown)
+                return;
+
+            lastClickTime = Time.time;
+
             var hit = Physics2D.Raycast(
                 m_cam.ScreenToWorldPoint(Input.mousePosition),
                 Vector2.zero
@@ -338,10 +345,5 @@ public class BoardController : MonoBehaviour
         }
 
         m_potentialMatch.Clear();
-    }
-
-    public void TriggerWin()
-    {
-        Debug.Log("WIN: Board cleared");
     }
 }

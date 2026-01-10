@@ -691,7 +691,7 @@ public class Board
                 GameObject.Destroy(cell.gameObject);
                 m_cells[x, y] = null;
             }
-        }
+        }   
     }
 
     private List<NormalItem.eNormalType> GenerateInitialPool()
