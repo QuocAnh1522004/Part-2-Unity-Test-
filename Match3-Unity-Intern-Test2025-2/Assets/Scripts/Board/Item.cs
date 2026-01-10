@@ -13,6 +13,11 @@ public class Item
     public Transform View { get; private set; }
 
     private Image uiImage;
+    public RectTransform UIRect { get; private set; }
+    public RectTransform GetUIRect()
+    {
+        return uiImage != null ? uiImage.rectTransform : null;
+    }
     public void ConvertToUI(RectTransform slot)
     {
         if (View == null) return;
@@ -112,6 +117,11 @@ public class Item
         return false;
     }
 
+    public bool IsSameItem(Item other)
+    {
+        return other != null && IsSameType(other);
+    }
+
     internal virtual void ExplodeView()
     {
         if (View)
@@ -154,4 +164,6 @@ public class Item
             View = null;
         }
     }
+
+
 }
