@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+using UnityEngine.UI;
 
 [Serializable]
 public class Item
@@ -11,7 +12,24 @@ public class Item
 
     public Transform View { get; private set; }
 
-
+    private Image uiImage;
+    public void ConvertToUI(RectTransform slot)
+    {
+        if (View == null) return;
+        SpriteRenderer sr = View.GetComponent<SpriteRenderer>();
+        if (sr == null) return;
+        GameObject go = new GameObject("UI_Item");
+        uiImage = go.AddComponent<Image>();
+        uiImage.sprite = sr.sprite;
+        uiImage.preserveAspect = true;
+        RectTransform rt = uiImage.rectTransform;
+        rt.SetParent(slot);
+        rt.localPosition = Vector3.zero;
+        rt.localRotation = Quaternion.identity;
+        rt.localScale = new Vector3(0.5f,0.5f,0.5f);
+        GameObject.Destroy(View.gameObject);
+        View = null;
+    }
     public virtual void SetView()
     {
         string prefabname = GetPrefabName();
@@ -25,7 +43,7 @@ public class Item
             }
         }
     }
-
+  
     protected virtual string GetPrefabName() { return string.Empty; }
 
     public virtual void SetCell(Cell cell)

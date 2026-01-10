@@ -8,8 +8,9 @@ using UnityEngine;
 public class BoardController : MonoBehaviour
 {
     public event Action OnMoveEvent = delegate { };
-
     public bool IsBusy { get; private set; }
+
+    public HotbarManager m_hotbar;
 
     private Board m_board;
 
@@ -31,6 +32,16 @@ public class BoardController : MonoBehaviour
 
     private bool m_gameOver;
 
+
+    private void Awake()
+    {
+        GameObject canvas = GameObject.Find("Canvas");
+        m_hotbar = canvas.GetComponentInChildren<HotbarManager>(true);
+        if (m_hotbar == null)
+        {
+            Debug.Log("hotbar is null");
+        }
+    }
     public void StartGame(GameManager gameManager, GameSettings gameSettings)
     {
         m_gameManager = gameManager;
@@ -131,8 +142,29 @@ public class BoardController : MonoBehaviour
         //}
         if (Input.GetMouseButtonDown(0))
         {
+            var hit = Physics2D.Raycast(
+                m_cam.ScreenToWorldPoint(Input.mousePosition),
+                Vector2.zero
+            );
 
+            if (hit.collider != null)
+            {
+                Cell cell = hit.collider.GetComponent<Cell>();
+
+                if (cell != null && !cell.IsEmpty && m_hotbar.HasSpace)
+                {
+                    TakeItemToHotbar(cell);
+                }
+            }
         }
+    }
+
+    private void TakeItemToHotbar(Cell cell)
+    {
+        Item item = cell.Item;
+        cell.Free();
+        item.SetCell(null);
+        m_hotbar.AddItem(item);
     }
 
     private void ResetRayCast()
@@ -228,7 +260,7 @@ public class BoardController : MonoBehaviour
             matches[i].ExplodeItem();
         }
 
-        if(matches.Count > m_gameSettings.MatchesMin)
+        if (matches.Count > m_gameSettings.MatchesMin)
         {
             m_board.ConvertNormalToBonus(matches, cellEnd);
         }
