@@ -21,20 +21,26 @@ public class Item
     public void ConvertToUI(RectTransform slot)
     {
         if (View == null) return;
+
         SpriteRenderer sr = View.GetComponent<SpriteRenderer>();
         if (sr == null) return;
+
         GameObject go = new GameObject("UI_Item");
-        uiImage = go.AddComponent<Image>();
-        uiImage.sprite = sr.sprite;
-        uiImage.preserveAspect = true;
-        RectTransform rt = uiImage.rectTransform;
-        rt.SetParent(slot);
-        rt.localPosition = Vector3.zero;
-        rt.localRotation = Quaternion.identity;
-        rt.localScale = new Vector3(0.5f,0.5f,0.5f);
+        Image img = go.AddComponent<Image>();
+        img.sprite = sr.sprite;
+        img.preserveAspect = true;
+
+        RectTransform rt = img.rectTransform;
+        rt.SetParent(slot, false);
+        rt.anchoredPosition = Vector2.zero;
+        rt.localScale = Vector3.one * 0.5f;
+
+        uiImage = img;
+
         GameObject.Destroy(View.gameObject);
         View = null;
     }
+
     public virtual void SetView()
     {
         string prefabname = GetPrefabName();

@@ -19,11 +19,11 @@ public class HotbarManager : MonoBehaviour
         int insertIndex = GetInsertIndex(item);
 
         ShiftUIItemsRight(insertIndex);
-
         storedItems.Insert(insertIndex, item);
 
         RectTransform slot = slots[insertIndex] as RectTransform;
-        Vector3 screenPos = slot.position;
+
+        Vector3 screenPos = RectTransformUtility.WorldToScreenPoint(null, slot.position);
         Vector3 worldPos = Camera.main.ScreenToWorldPoint(screenPos);
         worldPos.z = item.View.position.z;
 
@@ -31,8 +31,11 @@ public class HotbarManager : MonoBehaviour
             .OnComplete(() =>
             {
                 item.ConvertToUI(slot);
+                CheckAndExplodeMatches();
             });
     }
+
+
 
     private int GetInsertIndex(Item newItem)
     {
@@ -53,10 +56,91 @@ public class HotbarManager : MonoBehaviour
     {
         for (int i = storedItems.Count - 1; i >= fromIndex; i--)
         {
-            RectTransform rt = storedItems[i].GetUIRect();
-            rt.DOMove(slots[i + 1].position, 0.2f);
+            RectTransform ui = storedItems[i].GetUIRect();
+            RectTransform targetSlot = slots[i + 1] as RectTransform;
+
+            // Ensure same parent
+            ui.SetParent(targetSlot.parent, true);
+
+            // UI animation ONLY
+            ui.DOAnchorPos(targetSlot.anchoredPosition, 0.25f);
         }
     }
 
+    private void CheckAndExplodeMatches()
+    {
+        if (storedItems.Count < 3) return;
 
+        int count = 1;
+
+        for (int i = 1; i < storedItems.Count; i++)
+        {
+            if (storedItems[i].IsSameItem(storedItems[i - 1]))
+            {
+                count++;
+
+                if (count >= 3)
+                {
+                    int startIndex = i - count + 1;
+                    ExplodeHotbarItems(startIndex, count);
+                    return;
+                }
+            }
+            else
+            {
+                count = 1;
+            }
+        }
+    }
+
+    private void ExplodeHotbarItems(int startIndex, int length)
+    {
+        List<Item> toRemove = new List<Item>();
+
+        for (int i = startIndex; i < startIndex + length; i++)
+        {
+            toRemove.Add(storedItems[i]);
+        }
+
+        Sequence seq = DOTween.Sequence();
+
+        foreach (var item in toRemove)
+        {
+            RectTransform ui = item.GetUIRect();
+            seq.Join(ui.DOScale(0f, 0.15f));
+        }
+
+        seq.OnComplete(() =>
+        {
+            // Destroy UI safely AFTER animation
+            foreach (var item in toRemove)
+            {
+                Destroy(item.GetUIRect().gameObject);
+                storedItems.Remove(item);
+            }
+
+            // Re-layout remaining items
+            RelayoutAllItems();
+
+            // Optional: chain reactions
+            CheckAndExplodeMatches();
+        });
+    }
+
+    private void RelayoutAllItems()
+    {
+        for (int i = 0; i < storedItems.Count; i++)
+        {
+            RectTransform ui = storedItems[i].GetUIRect();
+            RectTransform slot = slots[i] as RectTransform;
+
+            ui.SetParent(slot.parent, true);
+            ui.DOAnchorPos(slot.anchoredPosition, 0.25f)
+              .OnComplete(() =>
+              {
+                  ui.SetParent(slot, false);
+                  //ui.anchoredPosition = Vector2.zero;
+              });
+        }
+    }
 }
