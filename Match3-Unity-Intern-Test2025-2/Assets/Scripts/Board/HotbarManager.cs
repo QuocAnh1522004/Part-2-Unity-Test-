@@ -67,9 +67,9 @@ public class HotbarManager : MonoBehaviour
         }
     }
 
-    private void CheckAndExplodeMatches()
+    private bool CheckAndExplodeMatches()
     {
-        if (storedItems.Count < 3) return;
+        if (storedItems.Count < 3) return false;
 
         int count = 1;
 
@@ -83,7 +83,7 @@ public class HotbarManager : MonoBehaviour
                 {
                     int startIndex = i - count + 1;
                     ExplodeHotbarItems(startIndex, count);
-                    return;
+                    return true;
                 }
             }
             else
@@ -91,6 +91,8 @@ public class HotbarManager : MonoBehaviour
                 count = 1;
             }
         }
+
+        return false;
     }
 
     private void ExplodeHotbarItems(int startIndex, int length)
@@ -112,35 +114,29 @@ public class HotbarManager : MonoBehaviour
 
         seq.OnComplete(() =>
         {
-            // Destroy UI safely AFTER animation
             foreach (var item in toRemove)
             {
                 Destroy(item.GetUIRect().gameObject);
                 storedItems.Remove(item);
             }
 
-            // Re-layout remaining items
-            RelayoutAllItems();
+            // ONLY relayout items that actually shifted
+            RelayoutFromIndex(startIndex);
 
             // Optional: chain reactions
             CheckAndExplodeMatches();
         });
     }
 
-    private void RelayoutAllItems()
+    private void RelayoutFromIndex(int fromIndex)
     {
-        for (int i = 0; i < storedItems.Count; i++)
+        for (int i = fromIndex; i < storedItems.Count; i++)
         {
             RectTransform ui = storedItems[i].GetUIRect();
             RectTransform slot = slots[i] as RectTransform;
 
             ui.SetParent(slot.parent, true);
-            ui.DOAnchorPos(slot.anchoredPosition, 0.25f)
-              .OnComplete(() =>
-              {
-                  ui.SetParent(slot, false);
-                  //ui.anchoredPosition = Vector2.zero;
-              });
+            ui.DOAnchorPos(slot.anchoredPosition, 0.25f);
         }
     }
 }
