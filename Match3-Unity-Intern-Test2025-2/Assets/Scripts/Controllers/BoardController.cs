@@ -12,7 +12,7 @@ public class BoardController : MonoBehaviour
 
     public HotbarManager m_hotbar;
 
-    private Board m_board;
+    public Board m_board;
 
     private GameManager m_gameManager;
 
@@ -60,7 +60,7 @@ public class BoardController : MonoBehaviour
     private void Fill()
     {
         m_board.Fill();
-        FindMatchesAndCollapse();
+        //FindMatchesAndCollapse();
     }
 
     private void OnGameStateChange(GameManager.eStateGame state)
@@ -340,5 +340,8 @@ public class BoardController : MonoBehaviour
         m_potentialMatch.Clear();
     }
 
-
+    public void TriggerWin()
+    {
+        Debug.Log("WIN: Board cleared");
+    }
 }

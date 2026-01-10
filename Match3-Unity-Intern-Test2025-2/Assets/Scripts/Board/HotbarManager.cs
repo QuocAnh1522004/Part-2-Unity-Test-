@@ -3,15 +3,16 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Analytics;
 
 public class HotbarManager : MonoBehaviour
 {
     [SerializeField] private Transform[] slots;
 
     private List<Item> storedItems = new List<Item>();
+    private BoardController m_boardController;
     public bool HasSpace => storedItems.Count < slots.Length;
-
-
+    private bool isGameOver;
     public void AddItem(Item item)
     {
         if (!HasSpace) return;
@@ -28,14 +29,37 @@ public class HotbarManager : MonoBehaviour
         worldPos.z = item.View.position.z;
 
         item.View.DOMove(worldPos, 0.3f)
-            .OnComplete(() =>
+        .OnComplete(() =>
+        {
+            item.ConvertToUI(slot);
+
+            bool exploded = CheckAndExplodeMatches();
+
+            if (!exploded && !HasSpace && !HasExplodableMatch())
             {
-                item.ConvertToUI(slot);
-                CheckAndExplodeMatches();
-            });
+                TriggerLose();
+            }
+        });
+        GameObject boardController = GameObject.Find("BoardController");
+        m_boardController = boardController.GetComponentInChildren<BoardController>(true);
+        if (m_boardController == null)
+        {
+            Debug.Log("board controller is null");
+        }
+        if (m_boardController.m_board.IsBoardClear())
+        {
+            m_boardController.TriggerWin();
+        }
     }
 
+    private void TriggerLose()
+    {
+        if (isGameOver) return;
+        isGameOver = true;
 
+        Debug.Log("LOSE: Hotbar full and no valid matches");
+
+    }
 
     private int GetInsertIndex(Item newItem)
     {
@@ -138,5 +162,28 @@ public class HotbarManager : MonoBehaviour
             ui.SetParent(slot.parent, true);
             ui.DOAnchorPos(slot.anchoredPosition, 0.25f);
         }
+    }
+
+    private bool HasExplodableMatch()
+    {
+        if (storedItems.Count < 3) return false;
+
+        int count = 1;
+
+        for (int i = 1; i < storedItems.Count; i++)
+        {
+            if (storedItems[i].IsSameItem(storedItems[i - 1]))
+            {
+                count++;
+                if (count >= 3)
+                    return true;
+            }
+            else
+            {
+                count = 1;
+            }
+        }
+
+        return false;
     }
 }

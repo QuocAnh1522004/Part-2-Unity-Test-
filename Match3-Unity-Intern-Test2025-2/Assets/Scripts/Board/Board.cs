@@ -25,6 +25,7 @@ public class Board
 
     private int m_matchMin;
 
+
     public Board(Transform transform, GameSettings gameSettings)
     {
         m_root = transform;
@@ -74,38 +75,56 @@ public class Board
 
     internal void Fill()
     {
-        for (int x = 0; x < boardSizeX; x++)
+        //for (int x = 0; x < boardSizeX; x++)
+        //{
+        //    for (int y = 0; y < boardSizeY; y++)
+        //    {
+        //        Cell cell = m_cells[x, y];
+        //        NormalItem item = new NormalItem();
+
+        //        List<NormalItem.eNormalType> types = new List<NormalItem.eNormalType>();
+        //        if (cell.NeighbourBottom != null)
+        //        {
+        //            NormalItem nitem = cell.NeighbourBottom.Item as NormalItem;
+        //            if (nitem != null)
+        //            {
+        //                types.Add(nitem.ItemType);
+        //            }
+        //        }
+
+        //        if (cell.NeighbourLeft != null)
+        //        {
+        //            NormalItem nitem = cell.NeighbourLeft.Item as NormalItem;
+        //            if (nitem != null)
+        //            {
+        //                types.Add(nitem.ItemType);
+        //            }
+        //        }
+
+        //        item.SetType(Utils.GetRandomNormalTypeExcept(types.ToArray()));
+        //        item.SetView();
+        //        item.SetViewRoot(m_root);
+
+        //        cell.Assign(item);
+        //        cell.ApplyItemPosition(false);
+        //    }
+        //}
+        List<NormalItem.eNormalType> pool = GenerateInitialPool();
+        ShufflePool(pool);
+
+        int index = 0;
+
+        for (int y = 0; y < boardSizeY; y++)
         {
-            for (int y = 0; y < boardSizeY; y++)
+            for (int x = 0; x < boardSizeX; x++)
             {
-                Cell cell = m_cells[x, y];
                 NormalItem item = new NormalItem();
-
-                List<NormalItem.eNormalType> types = new List<NormalItem.eNormalType>();
-                if (cell.NeighbourBottom != null)
-                {
-                    NormalItem nitem = cell.NeighbourBottom.Item as NormalItem;
-                    if (nitem != null)
-                    {
-                        types.Add(nitem.ItemType);
-                    }
-                }
-
-                if (cell.NeighbourLeft != null)
-                {
-                    NormalItem nitem = cell.NeighbourLeft.Item as NormalItem;
-                    if (nitem != null)
-                    {
-                        types.Add(nitem.ItemType);
-                    }
-                }
-
-                item.SetType(Utils.GetRandomNormalTypeExcept(types.ToArray()));
+                item.SetType(pool[index++]);
                 item.SetView();
                 item.SetViewRoot(m_root);
 
-                cell.Assign(item);
-                cell.ApplyItemPosition(false);
+                m_cells[x, y].Assign(item);
+                m_cells[x, y].ApplyItemPosition(false);
             }
         }
     }
@@ -673,5 +692,64 @@ public class Board
                 m_cells[x, y] = null;
             }
         }
+    }
+
+    private List<NormalItem.eNormalType> GenerateInitialPool()
+    {
+        int totalCells = boardSizeX * boardSizeY;
+
+        if (totalCells % 3 != 0)
+            throw new InvalidOperationException("Board size must be divisible by 3.");
+
+        int groups = totalCells / 3;
+
+        NormalItem.eNormalType[] allTypes =
+            (NormalItem.eNormalType[])Enum.GetValues(typeof(NormalItem.eNormalType));
+
+        // limit number of distinct types
+        int distinctCount = Mathf.Min(allTypes.Length, groups);
+
+        // randomly choose which types appear
+        List<NormalItem.eNormalType> selectedTypes =
+            allTypes.OrderBy(_ => UnityEngine.Random.value)
+                    .Take(distinctCount)
+                    .ToList();
+
+        List<NormalItem.eNormalType> pool = new List<NormalItem.eNormalType>(totalCells);
+
+        int baseGroups = groups / distinctCount;
+        int remainder = groups % distinctCount;
+
+        foreach (var type in selectedTypes)
+        {
+            int typeGroups = baseGroups + (remainder-- > 0 ? 1 : 0);
+
+            for (int i = 0; i < typeGroups * 3; i++)
+                pool.Add(type);
+        }
+
+        return pool;
+    }
+
+    private void ShufflePool(List<NormalItem.eNormalType> pool)
+    {
+        for (int i = 0; i < pool.Count; i++)
+        {
+            int rnd = UnityEngine.Random.Range(i, pool.Count);
+            (pool[i], pool[rnd]) = (pool[rnd], pool[i]);
+        }
+    }
+
+    public bool IsBoardClear()
+    {
+        for (int x = 0; x < boardSizeX; x++)
+        {
+            for (int y = 0; y < boardSizeY; y++)
+            {
+                if (!m_cells[x, y].IsEmpty)
+                    return false;
+            }
+        }
+        return true;
     }
 }
